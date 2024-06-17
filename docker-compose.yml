@@ -50,5 +50,5 @@ services:
     restart: always
     build: .
     ports:
-      - 5555:5554
+      - 5554:5554
     command: celery -A cms flower
