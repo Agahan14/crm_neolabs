@@ -1,7 +1,7 @@
 import random
 import string
 
-from django.db.models import CharField, Value
+from django.core.mail import send_mail
 from drf_multiple_model.views import (
     FlatMultipleModelAPIView,
     ObjectMultipleModelAPIView,
@@ -26,10 +26,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
-from twilio.rest import Client
+
+from cms import settings
 
 from .models import (
-    PasswordResetByPhone,
+    OTP,
     Student,
     Teacher,
     User,
@@ -37,7 +38,8 @@ from .models import (
 from .permissions import IsSuperUser
 from .serializers import (
     ChangePasswordSerializer,
-    ForgotPasswordByPhoneSerializer,
+    ConfirmationCodeSerializer,
+    ForgotPasswordSerializer,
     LoginSerializer,
     OfficeManagerListSerializer,
     ProfileDetailSerializer,
@@ -45,7 +47,6 @@ from .serializers import (
     RegisterOfficeManagerSerializer,
     RegisterStudentSerializer,
     RegisterTeacherSerializer,
-    ResetPasswordByPhoneSerializer,
     StudentSerializer,
     TeacherListSerializer,
     TeacherSerializer,
@@ -206,40 +207,76 @@ class ChangePasswordView(APIView):
         )
 
 
-class ResetPasswordByPhoneAPIView(APIView):
-    @swagger_auto_schema(request_body=ResetPasswordByPhoneSerializer)
+class ForgotPasswordView(generics.GenericAPIView):
+    serializer_class = ForgotPasswordSerializer
+
+    @swagger_auto_schema(
+        tags=["Authentication"],
+        operation_description="Этот эндпоинт предоставляет возможность сбросить пароль пользователя по email.",
+    )
     def post(self, request, *args, **kwargs):
-        serializer = ResetPasswordByPhoneSerializer(data=request.data)
-        if not serializer.is_valid():
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data["email"]
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response(
+                    {"error": "User with this email does not exist."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            otp_code = OTP.generate_otp()
+            OTP.objects.create(user=user, otp=otp_code)
+            # Send the OTP to the user's email
+            subject = "Forgot Password OTP"
+            message = f"Your OTP is: {otp_code}"
+            from_email = settings.EMAIL_HOST_USER
+            recipient_list = [email]
+            send_mail(subject, message, from_email, recipient_list)
+
             return Response(
-                data={"error": serializer.errors}, status=status.HTTP_406_NOT_ACCEPTABLE
+                {"message": "OTP sent to your email."}, status=status.HTTP_200_OK
             )
 
-        token = serializer.validated_data.get("token")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        passwordResetByPhone = PasswordResetByPhone.objects.filter(token=token).first()
 
-        if passwordResetByPhone is None:
-            raise ValidationError(detail={"error": "Token not valid!"})
+class ConfirmCodeView(generics.GenericAPIView):
+    serializer_class = ConfirmationCodeSerializer
 
-        if token != passwordResetByPhone.token:
-            raise exceptions.APIException(detail={"error": "Code is incorrect!"})
+    @swagger_auto_schema(
+        tags=["Authentication"],
+        operation_description="Этот эндпоинт позволяет "
+        "подтвердить код подтверждения, "
+        "который был отправлен на адрес "
+        "электронной почты пользователя "
+        "после успешной регистрации. После "
+        "подтверждения кода, система выдает новый "
+        "токен доступа (Access Token) и обновления "
+        "(Refresh Token) для пользователя.",
+    )
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        user = User.objects.filter(phone=passwordResetByPhone.phone).first()
+        code = serializer.validated_data.get("code")
+        try:
+            confirmation_code = OTP.objects.get(otp=code)
+        except OTP.DoesNotExist:
+            return Response({"error": "Invalid or already confirmed code."}, status=400)
 
-        if not user:
-            raise NotFound(detail={"error": ("User not found!")})
+        user = confirmation_code.user
+        confirmation_code.delete()
 
-        passwordResetByPhone.delete()
         refresh = RefreshToken.for_user(user)
 
         return Response(
             {
+                "message": "Code confirmed successfully.",
                 "user_id": str(user.id),
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
-            },
-            status=status.HTTP_200_OK,
+            }
         )
 
 

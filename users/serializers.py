@@ -1,6 +1,7 @@
 from django.contrib.auth.password_validation import validate_password
-from rest_framework import serializers, fields
-from .models import User, Teacher, Student
+from rest_framework import fields, serializers
+
+from .models import OTP, Student, Teacher, User
 from .services import UserService
 
 
@@ -9,7 +10,16 @@ class RegisterOfficeManagerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'phone', 'email', 'work_days', 'start_work_time', 'end_work_time']
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "work_days",
+            "start_work_time",
+            "end_work_time",
+        ]
 
     def validate_phone(self, value):
         return UserService.validate_phone(value)
@@ -19,12 +29,12 @@ class LoginSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
         required=True,
-        style={'input_type': 'password', 'placeholder': 'Password'}
+        style={"input_type": "password", "placeholder": "Password"},
     )
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'password']
+        fields = ["id", "email", "password"]
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -32,27 +42,46 @@ class ChangePasswordSerializer(serializers.Serializer):
     confirm_password = serializers.CharField(required=True)
 
     def validate(self, attrs):
-        if attrs['password'] != attrs['confirm_password']:
-            raise serializers.ValidationError({"error": "Password fields didn't match."})
+        if attrs["password"] != attrs["confirm_password"]:
+            raise serializers.ValidationError(
+                {"error": "Password fields didn't match."}
+            )
 
         return attrs
 
 
-class ForgotPasswordByPhoneSerializer(serializers.Serializer):
-    phone = serializers.CharField(required=True, min_length=13)
-
-    def validate_phone(self, value):
-        return UserService.validate_phone(value)
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
 
 
-class ResetPasswordByPhoneSerializer(serializers.Serializer):
-    token = serializers.CharField(required=True, min_length=6)
+class ConfirmationCodeSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=4)
+
+    def validate(self, data):
+        code = data.get("code")
+
+        try:
+            otp_obj = OTP.objects.get(otp=code)
+            if otp_obj.is_expired:
+                raise serializers.ValidationError({"error": "OTP has expired."})
+        except OTP.DoesNotExist:
+            raise serializers.ValidationError({"error": "Invalid OTP."})
+
+        return data
 
 
 class RegisterTeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Teacher
-        fields = ['id', 'first_name', 'last_name', 'phone', 'email', 'patent_number', 'patent_term']
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "patent_number",
+            "patent_term",
+        ]
 
     def validate_phone(self, value):
         return UserService.validate_phone(value)
@@ -61,7 +90,7 @@ class RegisterTeacherSerializer(serializers.ModelSerializer):
 class RegisterStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
-        fields = ['id', 'first_name', 'last_name', 'phone', 'email']
+        fields = ["id", "first_name", "last_name", "phone", "email"]
 
     def validate_phone(self, value):
         return UserService.validate_phone(value)
@@ -71,32 +100,25 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = [
-            'id',
-            'first_name',
-            'last_name',
-            'phone',
-            'email',
-            'is_blacklist',
-            'status',
+            "id",
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "is_blacklist",
+            "status",
         ]
 
 
 class StudentInApplicationSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Student
-        fields = [
-            'id',
-            'first_name',
-            'last_name',
-            'phone',
-            'payment'
-        ]
+        fields = ["id", "first_name", "last_name", "phone", "payment"]
         extra_kwargs = {
-            'first_name': {'required': False},
-            'last_name': {'required': False},
-            'phone': {'required': False},
-            'payment': {'required': False}
+            "first_name": {"required": False},
+            "last_name": {"required": False},
+            "phone": {"required": False},
+            "payment": {"required": False},
         }
 
     def validate_phone(self, value):
@@ -110,25 +132,24 @@ class TeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Teacher
         fields = [
-            'id',
-            'first_name',
-            'last_name',
-            'phone',
-            'email',
-            'patent_number',
-            'patent_term',
-            'role',
-            'work_days',
-            'start_work_time',
-            'end_work_time'
+            "id",
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "patent_number",
+            "patent_term",
+            "role",
+            "work_days",
+            "start_work_time",
+            "end_work_time",
         ]
 
     def get_role(self, teacher: Teacher):
-        return 'teacher'
+        return "teacher"
 
     def validate_phone(self, value):
         return UserService.validate_phone(value)
-
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -137,7 +158,15 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'full_name', 'phone', 'email', 'role', ]
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "full_name",
+            "phone",
+            "email",
+            "role",
+        ]
 
     def get_role(self, user: User):
         if user.is_superuser:
@@ -157,7 +186,13 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'full_name', 'phone', 'email', 'role', ]
+        fields = [
+            "id",
+            "full_name",
+            "phone",
+            "email",
+            "role",
+        ]
 
     def get_role(self, user: User):
         if user.is_superuser:
@@ -174,7 +209,7 @@ class OfficeManagerListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'full_name', 'role', 'phone']
+        fields = ["id", "first_name", "last_name", "full_name", "role", "phone"]
 
     def get_role(self, user: User):
         return "office_manager"
@@ -183,18 +218,22 @@ class OfficeManagerListSerializer(serializers.ModelSerializer):
         return f"{user.first_name} {user.last_name}"
 
 
-
-
-
 class TeacherListSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     direction = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
 
-
     class Meta:
         model = Teacher
-        fields = ['id', 'first_name', 'last_name', 'full_name', 'role', 'direction', 'phone']
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "full_name",
+            "role",
+            "direction",
+            "phone",
+        ]
 
     def get_role(self, user: User):
         return "teacher"

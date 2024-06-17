@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import User, PasswordResetByPhone, Student, Teacher
+
+from .models import Student, Teacher, User
+
 # Register your models here.
 
-admin.site.register([User, PasswordResetByPhone, Student, Teacher])
+admin.site.register([User, Student, Teacher])
