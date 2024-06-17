@@ -11,9 +11,7 @@ services:
   postgres:
     image: postgres:13.0-alpine
     env_file:
-      - ./.env
-    ports:
-      - "5432:5432"
+      - .env
     volumes:
       - ./postgres_data:/var/lib/postgresql/data/
 
@@ -21,11 +19,12 @@ services:
     build: .
     command: python manage.py runserver 0.0.0.0:8019
     volumes:
-      - .:/app
+      - .:/config
+      - ./static:/app/static
     ports:
       - "8019:8019"
     env_file:
-      - ./.env
+      - .env
     depends_on:
       - postgres
 
