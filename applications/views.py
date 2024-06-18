@@ -158,6 +158,16 @@ class UserUnarchieveUpdateRetrieveView(views.APIView):
 
 
 class GlobalSearchView(views.APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "q",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description="Search query",
+            )
+        ]
+    )
     def get(self, request, *args, **kwargs):
         search_query = request.query_params.get("q", "")
         # Используем Q-объекты для поиска по нескольким полям и моделям
