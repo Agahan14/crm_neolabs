@@ -7,6 +7,7 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, generics, views
 
+from applications.pagination import CustomPagination
 from users.models import Student, Teacher, User
 from users.serializers import (
     StudentSerializer,
@@ -72,6 +73,7 @@ class SourceViewSet(ModelViewSet):
 class ApplicationListView(generics.ListAPIView):
     queryset = Application.objects.all()
     serializer_class = ApplicationListSerializer
+    pagination_class = CustomPagination
     filter_backends = (
         DjangoFilterBackend,
         filters.OrderingFilter,
@@ -179,14 +181,14 @@ class GlobalSearchView(views.APIView):
             Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
         )
 
-        # Сериализуем результаты поиска и отправляем обратно
-        data = {
-            "groups": GroupsSerializer(groups, many=True).data,
-            "applications": ApplicationSerializer(applications, many=True).data,
-            "teachers": TeacherSerializer(teachers, many=True).data,
-            "students": StudentSerializer(students, many=True).data,
+        # Сериализуем результаты поиска и объединяем их в один список
+        combined_results = {
+            "results": GroupsSerializer(groups, many=True).data
+            + ApplicationSerializer(applications, many=True).data
+            + TeacherSerializer(teachers, many=True).data
+            + StudentSerializer(students, many=True).data,
         }
-        return Response(data)
+        return Response(combined_results)
 
 
 class AddToStudentView(views.APIView):

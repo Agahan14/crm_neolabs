@@ -27,6 +27,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from applications.pagination import CustomPagination
 from cms import settings
 
 from .models import (
@@ -283,6 +284,7 @@ class ConfirmCodeView(generics.GenericAPIView):
 class TeacherViewSet(viewsets.ModelViewSet):
     queryset = Teacher.objects.all()
     serializer_class = TeacherSerializer
+    pagination_class = CustomPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["first_name", "last_name", "email", "patent_number"]
     ordering_fields = ["first_name", "last_name", "email", "patent_number"]
@@ -291,6 +293,7 @@ class TeacherViewSet(viewsets.ModelViewSet):
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+    pagination_class = CustomPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["first_name", "last_name", "email"]
     ordering_fields = ["first_name", "last_name", "email", "status"]

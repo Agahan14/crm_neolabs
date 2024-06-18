@@ -130,7 +130,7 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
     student = StudentInApplicationSerializer(required=False)
     direction = DirectionInApplicationSerializer(required=False)
     groups = GroupsInApplicationSerializer(required=False)
-    source =SourceInApplication(required=False)
+    source = SourceInApplication(required=False)
 
 
     class Meta:
