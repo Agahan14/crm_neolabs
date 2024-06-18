@@ -327,7 +327,7 @@ class AdminProfileRetrieveUpdateView(generics.RetrieveUpdateAPIView):
 
 
 class UserAndTeacherListView(FlatMultipleModelAPIView):
-    pagination_class = MultipleModelLimitOffsetPagination
+    # pagination_class = CustomPagination
     querylist = [
         {
             "queryset": User.objects.all(),
