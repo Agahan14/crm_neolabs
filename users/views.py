@@ -58,38 +58,6 @@ from .serializers import (
 from .utils import Util
 
 
-class CustomMultipleModelPagination(MultipleModelLimitOffsetPagination):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._count = None  # Initialize a count attribute
-
-    def paginate_queryset(self, queryset, request, view=None):
-        """
-        Override paginate_queryset to calculate and store the count of items.
-        """
-        self._count = queryset.count()  # Assuming queryset is a Django QuerySet
-        return super().paginate_queryset(queryset, request, view)
-
-    @property
-    def count(self):
-        """
-        A property to access the count of items.
-        """
-        return self._count
-
-    def format_response(self, data):
-        # Use self.count to access the count of items
-        return Response(
-            {
-                "count": self.count,  # Now this uses the count property
-                "next": self.get_next_link(),
-                "previous": self.get_previous_link(),
-                "results": data,
-                "custom_message": "This is a custom pagination response",
-            }
-        )
-
-
 class RegisterOfficeManagerView(APIView):
     permission_classes = (IsAuthenticated, IsSuperUser)
     serializer_class = RegisterOfficeManagerSerializer
@@ -359,7 +327,7 @@ class AdminProfileRetrieveUpdateView(generics.RetrieveUpdateAPIView):
 
 
 class UserAndTeacherListView(FlatMultipleModelAPIView):
-    pagination_class = CustomMultipleModelPagination
+    pagination_class = MultipleModelLimitOffsetPagination
     querylist = [
         {
             "queryset": User.objects.all(),
