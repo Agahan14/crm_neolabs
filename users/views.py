@@ -2,10 +2,12 @@ import random
 import string
 
 from django.core.mail import send_mail
+from django.db.models import Q
 from drf_multiple_model.views import (
     FlatMultipleModelAPIView,
     ObjectMultipleModelAPIView,
 )
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import (
     exceptions,
@@ -330,11 +332,43 @@ class UserAndTeacherListView(FlatMultipleModelAPIView):
             "queryset": User.objects.all(),
             "serializer_class": OfficeManagerListSerializer,
         },
-        {"queryset": Teacher.objects.all(), "serializer_class": TeacherListSerializer},
+        {
+            "queryset": Teacher.objects.all(),
+            "serializer_class": TeacherListSerializer,
+        },
     ]
+
+    def get_queryset(self):
+        search = self.request.query_params.get("search", None)
+        if search:
+            # Update each queryset in the querylist with a filtered queryset
+            for query in self.querylist:
+                model = query["queryset"].model
+                if model == User:
+                    query["queryset"] = query["queryset"].filter(
+                        Q(first_name__icontains=search) | Q(last_name__icontains=search)
+                    )
+                elif model == Teacher:
+                    query["queryset"] = query["queryset"].filter(
+                        Q(first_name__icontains=search) | Q(last_name__icontains=search)
+                    )
+        return super().get_queryset()
 
     def get_serializer_class(self):
         for query in self.querylist:
             if self.get_queryset() == query["queryset"]:
                 return query["serializer_class"]
         return None
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "search",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description="Search query",
+            ),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
