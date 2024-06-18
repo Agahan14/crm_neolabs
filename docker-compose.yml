@@ -2,12 +2,6 @@ version: '3.8'
 
 services:
 
-  redis:
-    image: redis:alpine
-    restart: always
-    ports:
-      - "6378:6378"
-
   postgres:
     image: postgres:13.0-alpine
     env_file:
@@ -27,28 +21,3 @@ services:
       - .env
     depends_on:
       - postgres
-
-  celery:
-    restart: always
-    build: .
-    command: celery -A cms worker -l info
-    volumes:
-      - .:/app
-    depends_on:
-      - redis
-
-  celery-beat:
-    restart: always
-    build: .
-    command: celery -A cms beat -l info
-    volumes:
-      - .:/app
-    depends_on:
-      - redis
-
-  flower:
-    restart: always
-    build: .
-    ports:
-      - 5554:5554
-    command: celery -A cms flower
