@@ -165,39 +165,55 @@ class GlobalSearchView(views.APIView):
                 openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
                 description="Search query",
-            )
+            ),
+            # New parameter for specifying the model type
+            openapi.Parameter(
+                "model_type",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                description="Model type to search in (application, group, teacher, student)",
+            ),
         ]
     )
     def get(self, request, *args, **kwargs):
         search_query = request.query_params.get("q", "")
-        # Используем Q-объекты для поиска по нескольким полям и моделям
-        groups = Groups.objects.filter(
-            Q(name__icontains=search_query)
-            | Q(teacher__first_name__icontains=search_query)
-            | Q(direction__name__icontains=search_query)
-        )
-        applications = Application.objects.filter(
-            Q(student__first_name__icontains=search_query)
-            | Q(student__last_name__icontains=search_query)
-            | Q(groups__name__icontains=search_query)
-            | Q(direction__name__icontains=search_query)
-        )
-        teachers = Teacher.objects.filter(
-            Q(first_name__icontains=search_query)
-            | Q(last_name__icontains=search_query)
-            | Q(patent_number__icontains=search_query)
-        )
-        students = Student.objects.filter(
-            Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
-        )
+        model_type = request.query_params.get("model_type", "").lower()
 
-        # Сериализуем результаты поиска и объединяем их в один список
-        combined_results = {
-            "results": GroupsSerializer(groups, many=True).data
-            + ApplicationSerializer(applications, many=True).data
-            + TeacherSerializer(teachers, many=True).data
-            + StudentSerializer(students, many=True).data,
-        }
+        results = []
+
+        if model_type == "group" or model_type == "":
+            groups = Groups.objects.filter(
+                Q(name__icontains=search_query)
+                | Q(teacher__first_name__icontains=search_query)
+                | Q(direction__name__icontains=search_query)
+            )
+            results += GroupsSerializer(groups, many=True).data
+
+        if model_type == "application" or model_type == "":
+            applications = Application.objects.filter(
+                Q(student__first_name__icontains=search_query)
+                | Q(student__last_name__icontains=search_query)
+                | Q(groups__name__icontains=search_query)
+                | Q(direction__name__icontains=search_query)
+            )
+            results += ApplicationSerializer(applications, many=True).data
+
+        if model_type == "teacher" or model_type == "":
+            teachers = Teacher.objects.filter(
+                Q(first_name__icontains=search_query)
+                | Q(last_name__icontains=search_query)
+                | Q(patent_number__icontains=search_query)
+            )
+            results += TeacherSerializer(teachers, many=True).data
+
+        if model_type == "student" or model_type == "":
+            students = Student.objects.filter(
+                Q(first_name__icontains=search_query)
+                | Q(last_name__icontains=search_query)
+            )
+            results += StudentSerializer(students, many=True).data
+
+        combined_results = {"results": results}
         return Response(combined_results)
 
 
