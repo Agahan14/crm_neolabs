@@ -62,7 +62,7 @@ class CustomMultipleModelPagination(MultipleModelLimitOffsetPagination):
     def format_response(self, data):
         return Response(
             {
-                "highest_count": self.request.query_params.get("limit", None),
+                "count": self.request.query_params.get("limit", None),
                 "next": self.get_next_link(),
                 "previous": self.get_previous_link(),
                 "results": data,
