@@ -171,7 +171,12 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_role(self, user: User):
         if user.is_superuser:
             return "superadmin"
-        return "office_manager"
+        if user.is_staff:
+            return "office_manager"
+        if isinstance(user, Teacher):
+            return "teacher"
+        if isinstance(user, Student):
+            return "student"
 
     def get_full_name(self, user: User):
         return f"{user.first_name} {user.last_name}"
