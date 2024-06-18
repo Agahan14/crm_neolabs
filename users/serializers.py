@@ -125,6 +125,31 @@ class StudentInApplicationSerializer(serializers.ModelSerializer):
         return UserService.validate_phone(value)
 
 
+class OfficeManagerSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+    work_days = fields.MultipleChoiceField(choices=User.DAYS_OF_WEEK)
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "role",
+            "work_days",
+            "start_work_time",
+            "end_work_time",
+        ]
+
+    def get_role(self, user: User):
+        return "office_manager"
+
+    def validate_phone(self, value):
+        return UserService.validate_phone(value)
+
+
 class TeacherSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     work_days = fields.MultipleChoiceField(choices=User.DAYS_OF_WEEK)

@@ -7,6 +7,7 @@ from .views import (
     ConfirmCodeView,
     ForgotPasswordView,
     LoginView,
+    OfficeManagerViewSet,
     RefreshTokenView,
     RegisterOfficeManagerView,
     RegisterStudentView,
@@ -19,6 +20,9 @@ from .views import (
 users_router = routers.DefaultRouter()
 users_router.register(r"students", StudentViewSet, basename="list-of-students")
 users_router.register(r"teachers", TeacherViewSet, basename="list-of-teachers")
+users_router.register(
+    r"office_managers", OfficeManagerViewSet, basename="list-of-office-managers"
+)
 
 urlpatterns = [
     path(

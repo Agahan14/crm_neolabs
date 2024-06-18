@@ -46,6 +46,7 @@ from .serializers import (
     ForgotPasswordSerializer,
     LoginSerializer,
     OfficeManagerListSerializer,
+    OfficeManagerSerializer,
     ProfileDetailSerializer,
     ProfileSerializer,
     RegisterOfficeManagerSerializer,
@@ -300,6 +301,15 @@ class StudentViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["first_name", "last_name", "email"]
     ordering_fields = ["first_name", "last_name", "email", "status"]
+
+
+class OfficeManagerViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.filter(is_staff=True)
+    serializer_class = OfficeManagerListSerializer
+    pagination_class = CustomPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["first_name", "last_name", "email"]
+    ordering_fields = ["first_name", "last_name", "email"]
 
 
 class AdminProfileRetrieveUpdateView(generics.RetrieveUpdateAPIView):
