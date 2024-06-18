@@ -244,3 +244,11 @@ CELERY_RESULT_SERIALIZER = "json"
 CSRF_TRUSTED_ORIGINS = ["https://neobook.online"]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+
+# swagger settings
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"},
+    },
+}
