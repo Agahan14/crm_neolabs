@@ -3,6 +3,7 @@ import string
 
 from django.core.mail import send_mail
 from django.db.models import Q
+from drf_multiple_model.pagination import MultipleModelLimitOffsetPagination
 from drf_multiple_model.views import (
     FlatMultipleModelAPIView,
     ObjectMultipleModelAPIView,
@@ -55,6 +56,19 @@ from .serializers import (
     TeacherSerializer,
 )
 from .utils import Util
+
+
+class CustomMultipleModelPagination(MultipleModelLimitOffsetPagination):
+    def format_response(self, data):
+        return Response(
+            {
+                "count": self.request.query_params.get("limit", None),
+                "next": self.get_next_link(),
+                "previous": self.get_previous_link(),
+                "results": data,
+                "custom_message": "This is a custom pagination response",
+            }
+        )
 
 
 class RegisterOfficeManagerView(APIView):
@@ -326,7 +340,7 @@ class AdminProfileRetrieveUpdateView(generics.RetrieveUpdateAPIView):
 
 
 class UserAndTeacherListView(FlatMultipleModelAPIView):
-    pagination_class = CustomPagination
+    pagination_class = CustomMultipleModelPagination
     querylist = [
         {
             "queryset": User.objects.all(),
