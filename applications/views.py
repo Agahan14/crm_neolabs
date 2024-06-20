@@ -6,14 +6,14 @@ from rest_framework import filters, permissions, status
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, generics, views
-
-from applications.pagination import CustomPagination
 from users.models import Student, Teacher, User
 from users.serializers import (
     StudentSerializer,
     TeacherSerializer,
 )
 from users.services import UserService
+
+from applications.pagination import CustomPagination
 
 from .models import (
     Application,
@@ -77,10 +77,8 @@ class ApplicationListView(generics.ListAPIView):
     filter_backends = (
         DjangoFilterBackend,
         filters.OrderingFilter,
-        filters.SearchFilter,
     )
     filterset_fields = ["status"]
-    search_fields = ["student__first_name", "student__last_name", "groups__name"]
 
 
 class ApplicationCreateView(generics.CreateAPIView):

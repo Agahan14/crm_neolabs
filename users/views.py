@@ -59,6 +59,11 @@ from .serializers import (
 from .utils import Util
 
 
+class CustomMultipleModelLimitOffsetPagination(MultipleModelLimitOffsetPagination):
+    default_limit = 10
+    max_limit = 100
+
+
 class RegisterOfficeManagerView(APIView):
     permission_classes = (IsAuthenticated, IsSuperUser)
     serializer_class = RegisterOfficeManagerSerializer
@@ -352,7 +357,7 @@ class AdminProfileRetrieveUpdateView(generics.RetrieveUpdateAPIView):
 
 
 class UserAndTeacherListView(FlatMultipleModelAPIView):
-    # pagination_class = CustomPagination
+    pagination_class = CustomMultipleModelLimitOffsetPagination
     querylist = [
         {
             "queryset": User.objects.all(),
