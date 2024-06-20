@@ -25,11 +25,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         ("6", "Сб"),
         ("7", "Вс"),
     )
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255, null=True, blank=True)
+    last_name = models.CharField(max_length=255, null=True, blank=True)
     password = models.CharField(max_length=255, null=True, blank=True)
-    phone = models.CharField(max_length=255, unique=True)
-    email = models.CharField(max_length=255, unique=True)
+    phone = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    email = models.CharField(max_length=255, unique=True, null=True, blank=True)
     work_days = MultiSelectField(
         max_choices=7,
         choices=DAYS_OF_WEEK,
