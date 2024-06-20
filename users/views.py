@@ -1,8 +1,11 @@
 import random
 import string
 
+from applications.pagination import CustomPagination
+from cms import settings
 from django.core.mail import send_mail
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_multiple_model.pagination import MultipleModelLimitOffsetPagination
 from drf_multiple_model.views import (
     FlatMultipleModelAPIView,
@@ -29,9 +32,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
-
-from applications.pagination import CustomPagination
-from cms import settings
 
 from .models import (
     OTP,
@@ -289,7 +289,12 @@ class TeacherViewSet(viewsets.ModelViewSet):
     queryset = Teacher.objects.all()
     serializer_class = TeacherSerializer
     pagination_class = CustomPagination
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_fields = ["is_archive"]
     search_fields = ["first_name", "last_name", "email", "patent_number"]
     ordering_fields = ["first_name", "last_name", "email", "patent_number"]
 
@@ -298,7 +303,12 @@ class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     pagination_class = CustomPagination
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_fields = ["is_archive"]
     search_fields = ["first_name", "last_name", "email"]
     ordering_fields = ["first_name", "last_name", "email", "status"]
 
@@ -307,7 +317,12 @@ class OfficeManagerViewSet(viewsets.ModelViewSet):
     queryset = User.objects.filter(is_staff=True)
     serializer_class = OfficeManagerListSerializer
     pagination_class = CustomPagination
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_fields = ["is_archive"]
     search_fields = ["first_name", "last_name", "email"]
     ordering_fields = ["first_name", "last_name", "email"]
 
