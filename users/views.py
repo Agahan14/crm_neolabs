@@ -360,7 +360,7 @@ class UserAndTeacherListView(FlatMultipleModelAPIView):
     pagination_class = CustomMultipleModelLimitOffsetPagination
     querylist = [
         {
-            "queryset": User.objects.all(),
+            "queryset": User.objects.filter(is_staff=True),
             "serializer_class": OfficeManagerListSerializer,
         },
         {
