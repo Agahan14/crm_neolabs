@@ -53,8 +53,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Teacher(User):
-    patent_number = models.CharField(max_length=255, unique=True)
-    patent_term = models.DateField()
+    patent_number = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    patent_term = models.DateField(null=True, blank=True)
 
 
 class Student(User):
