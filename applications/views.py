@@ -47,6 +47,8 @@ class RejectionReasonViewSet(ModelViewSet):
 
 class GroupsViewSet(ModelViewSet):
     queryset = Groups.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["direction", "status"]
     serializer_class = GroupsSerializer
 
 

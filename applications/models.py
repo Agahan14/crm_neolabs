@@ -35,7 +35,7 @@ class Groups(models.Model):
     TIMETABLE_CHOICES = ((1, "Пн, Ср, Пт"), (2, "Вт, Чт, Сб"))
     name = models.CharField(max_length=100)
     teacher = models.ForeignKey(
-        "users.Teacher", on_delete=models.CASCADE, null=True, related_name="teacher"
+        "users.teacher", on_delete=models.CASCADE, null=True, related_name="teacher"
     )
     direction = models.ForeignKey(Direction, on_delete=models.CASCADE, null=True)
     audience = models.PositiveSmallIntegerField(choices=AUDIENCE_CHOICES, default=1)
