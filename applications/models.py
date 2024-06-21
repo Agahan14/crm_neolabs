@@ -78,7 +78,8 @@ class Application(models.Model):
     APPLICATION_CHOICES = (
         (1, "Ждет звонка"),
         (2, "Записался на пробный урок"),
-        (3, "Посетил пробный урок")(4, "Неуспешная сделка"),
+        (3, "Посетил пробный урок"),
+        (4, "Неуспешная сделка"),
     )
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     groups = models.ForeignKey(Groups, on_delete=models.CASCADE, null=True)
